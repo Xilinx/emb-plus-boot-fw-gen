@@ -10,3 +10,16 @@ For example, to generate the RAVE metadata (main FPT and extension FPT):
 
     $ ./gen_fpt_bin.py --fpt metadata/rave_ivh/main_fpt.json --out main_fpt.bin
     $ ./gen_fpt_bin.py --fpt metadata/rave_ivh/ext_fpt.json --out ext_fpt.bin
+
+## package_apu_deb.sh
+This script is used to package an APU image (.xsabin) into a Debian package (.deb) for installation in the required directory
+
+For usage instaructions
+
+    $ ./package_apu_deb.sh --help
+
+Example usage:
+
+    $ ./package_apu_deb.sh -a <path/to/apu.xsabin>
+
+Optionally, the package version, maintainer and name can be set when creating the package
