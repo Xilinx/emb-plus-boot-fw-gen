@@ -1,0 +1,35 @@
+{
+    "fpt_header(0)": {
+        "magic_word": "0x3a0bc563",
+        "fpt_version": 4,
+        "fpt_header_size": 128,
+        "fpt_entry_size": 128,
+        "num_entries": 2
+    },
+    "fpt_entry(0, 1)": {
+        "type": "EXTENSION_FPT",
+        "subtype": "FPT_RAVE",
+        "device_id": 1,
+        "base_addr": "0x7fbf0000",
+        "partition_size": "0x2000",
+        "common_flags": "ACTIVE",
+        "specific_flags": "NONE",
+        "img_size": "0x0",
+        "img_checksum": "0x0",
+        "img_version": "0",
+        "img_security_lvl": 0
+    },
+    "fpt_entry(0, 2)": {
+        "type": "PDI_XSABIN_META",
+        "subtype": "NA",
+        "device_id": 1,
+        "base_addr": "0x7fbf2000",
+        "partition_size": "0x1cb4",
+        "common_flags": "ACTIVE",
+        "specific_flags": "NONE",
+        "img_size": "0x0",
+        "img_checksum": "0x0",
+        "img_version": "0",
+        "img_security_lvl": 0
+    }
+}
