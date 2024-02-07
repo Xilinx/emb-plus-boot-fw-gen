@@ -16,10 +16,12 @@ This script is used to package an APU image (.xsabin) into a Debian package (.de
 
 For usage instaructions
 
-    $ ./package_apu_deb.sh --help
+    $ ./package_deb.sh --help
 
 Example usage:
 
-    $ ./package_apu_deb.sh -a <path/to/apu.xsabin>
+    $ ./package_deb.sh -a <path/to/apu.xsabin>
+    $ ./package_deb.sh -e <path/to/boot.xsabin> -g <path/to/partition_metadata.json>
+    $ ./package_deb.sh -e <path/to/boot.xsabin> -g <path/to/partition_metadata.json> -v 2.0 -m AMD,Inc.
 
 Optionally, the package version, maintainer and name can be set when creating the package
