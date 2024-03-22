@@ -11,8 +11,8 @@ For example, to generate the RAVE metadata (main FPT and extension FPT):
     $ ./gen_fpt_bin.py --fpt metadata/rave_ivh/main_fpt.json --out main_fpt.bin
     $ ./gen_fpt_bin.py --fpt metadata/rave_ivh/ext_fpt.json --out ext_fpt.bin
 
-## package_apu_deb.sh
-This script is used to package an APU image (.xsabin) into a Debian package (.deb) for installation in the required directory
+## package_deb.sh
+This script is used to package apu/boot.xsabin's into a Debian packages (.deb) for installation in the required directory
 
 For usage instaructions
 
@@ -21,7 +21,7 @@ For usage instaructions
 Example usage:
 
     $ ./package_deb.sh -a <path/to/apu.xsabin>
-    $ ./package_deb.sh -e <path/to/boot.xsabin> -g <path/to/partition_metadata.json>
-    $ ./package_deb.sh -e <path/to/boot.xsabin> -g <path/to/partition_metadata.json> -v 2.0 -m AMD,Inc.
+    $ ./package_deb.sh -b <path/to/boot.xsabin> -f <path/to/partition_metadata.json> -g <path/to/platform.json> -i <silicon_type:es1/prod> -j <package_version> -k <maintainer_name> -m <build_date>
+    $ ./package_deb.sh -b <path/to/boot.xsabin> -f <path/to/partition_metadata.json> -g <path/to/platform.json> -i es1 -j 2.0 -k AMD,Inc -m 03192024
 
 Optionally, the package version, maintainer and name can be set when creating the package

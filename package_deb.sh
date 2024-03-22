@@ -2,6 +2,7 @@
 set -e
 
 # Copyright (c) 2023 - 2024 Advanced Micro Devices, Inc. All Rights Reserved.
+# Author: Sharath Dasari
 #
 # SPDX-License-Identifier: MIT
 
@@ -11,14 +12,15 @@ usage() {
 	echo "$(basename "${0}") [OPTION] .."
 	echo ""
 	echo "Options: "
-	echo " -a <apu_file.xsabin>         package a single file"
-	echo " -d <apu_dir>/                package all files in apu dir"
-	echo " -e <boot_file.xsabin>        package a single file"
-	echo " -f <boot_dir>/               package all files in ospi dir"
-	echo " -g <partition metadata file> used for extracting uuid"
-	echo " -v <package_version>"
-	echo " -m <package_maintainer>"
-	echo " -n <package_name>"
+	echo " -a <apu.xsabin>                 package apu xsabin file"
+	echo " -b <boot.xsabin>                package boot xsabin file"
+	echo " -f <partition.json>             passed as addition argument"
+	echo " -g <platform.json>              passed as addition argument"
+	echo " -i <device_type>"
+	echo " -j <package_version>"
+	echo " -k <package_maintainer>"
+	echo " -l <package_name>"
+	echo " -m <optional_tag>"
 }
 
 error() {
@@ -31,16 +33,17 @@ if [ "$#" -eq 0 ]; then
 	exit 1
 fi
 
-while getopts a:d:e:f:g:v:m:n:h opt; do
+while getopts a:b:f:g:i:j:k:l:m:h opt; do
 	case $opt in
-	a) APUFILE=$OPTARG ;;
-	d) APUDIR=$OPTARG ;;
-	e) BOOTFILE=$OPTARG ;;
-	f) BOOTDIR=$OPTARG ;;
-	g) PARTMETA=$OPTARG ;;
-	v) PKGVER=$OPTARG ;;
-	m) MAINTAINER=$OPTARG ;;
-	n) PKGNAME=$OPTARG ;;
+	a) APU=$OPTARG ;;
+	b) BASE=$OPTARG ;;
+	f) PARTITION=$OPTARG ;;
+	g) PLATFORM=$OPTARG ;;
+	i) DEVTYPE=$OPTARG ;;
+	j) PKGVER=$OPTARG ;;
+	k) MAINTAINER=$OPTARG ;;
+	l) PKGNAME=$OPTARG ;;
+	m) OPTAG=$OPTARG ;;
 	h)
 		usage
 		exit 0
@@ -54,37 +57,59 @@ done
 
 echo "Packaging into deb file started..."
 
-if [ -z "$APUFILE" ] && [ -z "$APUDIR" ] && [ -z "$BOOTFILE" ] && [ -z "$BOOTDIR" ]; then
-	error "Please provide an APU file (-a) or APU directory (-d) or BOOT file (-e) or BOOT directory to packge"
-elif [ -n "$APUFILE" ] && [ -n "$APUDIR" ] && [ -n "$BOOTFILE" ] && [ -n "$BOOTDIR" ]; then
-	error "Please provide either -a <apu_file.xsabin> or -d <apu_dir/> or -e <boot_file.xsabin> or -f <boot_dir/>"
+#Check at-least one option is passed
+if [ -z "$APU" ] && [ -z "$BASE" ]; then
+	error "Please provide an APU xsabin (-a) or BASE xsabin (-b) to packge"
 fi
 
-if [ -z "$APUFILE" ] && [ -z "$APUDIR" ]; then
-	#Check if partition metadata file provided
-	if [ -z "$PARTMETA" ]; then
-		error "Please provide partition metadata file"
+#Check the silicon type es1 or prod
+if [ "${DEVTYPE}" = "es1" ]; then
+	DEVICE="-es1"
+else
+	DEVICE=""
+fi
+
+#Check if optional tag is passed
+if [ -n "$OPTAG" ]; then
+	TAG="_$OPTAG"
+else
+	TAG=""
+fi
+
+if [ -n "$BASE" ]; then
+	#Check if partition metadata json file provided
+	if [ -z "$PARTITION" ]; then
+		error "Please provide partition metadata json file"
 	fi
+	#Check if platform json file provided
+	if [ -z "$PLATFORM" ]; then
+		error "Please provide platform json file"
+	fi
+	#Check if jq package installed
 	command -v jq >&2 || error "jq not found"
-	EXTRACTUUID=$(jq ".partition_metadata.logic_uuid" "$PARTMETA")
+	#Extract UUID from partition metadata json file
+	EXTRACTUUID=$(jq ".partition_metadata.logic_uuid" "$PARTITION")
 	UUID=$(echo "$EXTRACTUUID" | tr -d '"')
+	#Use default package name/version, maintainer if not provided
+	[ -z "$PKGNAME" ] && PKGNAME="xrt-emb-plus-ve2302-base$DEVICE" && echo "Using default PKGNAME: $PKGNAME"
 	[ -z "$PKGVER" ] && PKGVER="1.0" && echo "Using default PKGVER: $PKGVER"
 	[ -z "$MAINTAINER" ] && MAINTAINER="Unknown" && echo "Using default MAINTAINER: $MAINTAINER"
-	[ -z "$PKGNAME" ] && PKGNAME="xrt-boot" && echo "Using default PKGNAME: $PKGNAME"
-elif [ -z "$BOOTFILE" ] && [ -z "$BOOTDIR" ]; then
+elif [ -n "$APU" ]; then
+	#Use default package name/version, maintainer if not provided
 	[ -z "$PKGVER" ] && PKGVER="1.0" && echo "Using default PKGVER: $PKGVER"
 	[ -z "$MAINTAINER" ] && MAINTAINER="Unknown" && echo "Using default MAINTAINER: $MAINTAINER"
-	[ -z "$PKGNAME" ] && PKGNAME="xrt-apu" && echo "Using default PKGNAME: $PKGNAME"
+	[ -z "$PKGNAME" ] && PKGNAME="xrt-apu-linux-ve2302" && echo "Using default PKGNAME: $PKGNAME"
 fi
 
-BUILDDIR=${PKGNAME}_${PKGVER}
+#Debian package name creation
+BUILDDIR=${PKGNAME}_${PKGVER}${TAG}
 echo "${BUILDDIR}.deb"
 
+#Check if Debian file already exists
 [ -f "${BUILDDIR}.deb" ] && error "Output file already exists: ${BUILDDIR}.deb"
-[ -d "$BUILDDIR" ] && error "Build dir already exists: $BUILDDIR"
-
 mkdir -p "$BUILDDIR/DEBIAN"
 
+#Debian package control file creation
 cat <<EOF >"$BUILDDIR/DEBIAN/control"
 Package: $PKGNAME
 Architecture: all
@@ -94,27 +119,35 @@ Description: AMD Versal firmware
 Maintainer: $MAINTAINER
 EOF
 
-if [ -z "$APUFILE" ] && [ -z "$APUDIR" ]; then
+if [ -n "$BASE" ]; then
+	#Create a directory path for boot xsabin to be present
 	mkdir -p "$BUILDDIR/lib/firmware/xilinx/$UUID"
-elif [ -z "$BOOTFILE" ] && [ -z "$BOOTDIR" ]; then
+	mkdir -p "$BUILDDIR/opt/xilinx/firmware/emb_plus/ve2302_pcie_qdma$DEVICE/base/test"
+elif [ -n "$APU" ]; then
+	#Create a directory path for apu xsabin to be present
 	mkdir -p "$BUILDDIR/lib/firmware/xilinx/"
 fi
 
-if [ -n "$APUFILE" ]; then
-	[ "${APUFILE##*.}" != "xsabin" ] && error "$APUFILE does not have .xsabin extension"
-	cp "$APUFILE" "$BUILDDIR/lib/firmware/xilinx/"
-elif [ -n "$APUDIR" ]; then
-	[ -d "$APUDIR" ] || error "$APUDIR is not a valid directory"
-	cp -r "$APUDIR/" "$BUILDDIR/lib/firmware/xilinx/"
-elif [ -n "$BOOTFILE" ]; then
-	[ "${BOOTFILE##*.}" != "xsabin" ] && error "$BOOTFILE does not have .xsabin extension"
-	cp "$BOOTFILE" "$BUILDDIR/lib/firmware/xilinx/$UUID"
-elif [ -n "$BOOTDIR" ]; then
-	[ -d "$BOOTDIR" ] || error "$BOOTDIR is not a valid directory"
-	cp -r "$BOOTDIR/" "$BUILDDIR/lib/firmware/xilinx/$UUID"
+if [ -n "$APU" ]; then
+	#Check for xsabin extension
+	[ "${APU##*.}" != "xsabin" ] && error "$APU does not have .xsabin extension"
+	#Rename APU to xrt-versal-apu xsabin and copy
+	cp "$APU" "$BUILDDIR/lib/firmware/xilinx/xrt-versal-apu.xsabin"
+elif [ -n "$BASE" ]; then
+	#Check for xsabin extension
+	[ "${BASE##*.}" != "xsabin" ] && error "$BASE does not have .xsabin extension"
+	[ "${PLATFORM##*.}" != "json" ] && error "$PLATFORM does not have .json extension"
+	#Rename BASE to partition xsabin and copy
+	cp "$BASE" "$BUILDDIR/lib/firmware/xilinx/$UUID/partition.xsabin"
+	#Rename PLATFORM to platform json and copy
+	cp "$PLATFORM" "$BUILDDIR/opt/xilinx/firmware/emb_plus/ve2302_pcie_qdma$DEVICE/base/test/platform.json"
+	#Create a symlink partition xsabin
+	ln -s "/lib/firmware/xilinx/$UUID/partition.xsabin" "$BUILDDIR/opt/xilinx/firmware/emb_plus/ve2302_pcie_qdma$DEVICE/base/partition.xsabin"
 fi
 
+#Check if dpkg-deb package installed
 command -v dpkg-deb >&2 || error "dpkg-deb not found"
 dpkg-deb --build "$BUILDDIR"
 
+#Remove debian package directory
 rm -rf "$BUILDDIR"
