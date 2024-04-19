@@ -4,7 +4,7 @@
         "fpt_version"       : 4,
         "fpt_header_size"   : 128,
         "fpt_entry_size"    : 128,
-        "num_entries"       : 6
+        "num_entries"       : 7
     },
     "fpt_entry(0, 1)": {
         "type"              : "FPT",
@@ -53,6 +53,15 @@
         "subtype"           : "NA",
         "device_id"         : 0,
         "base_addr"         : "0x64C0000",
+        "partition_size"    : "0x20000",
+        "common_flags"      : ["ACTIVE"],
+        "dummy_data"        : 0
+    },
+    "fpt_entry(0, 7)": {
+        "type"              : "OSPI_VERSION",
+        "subtype"           : "NA",
+        "device_id"         : 0,
+        "base_addr"         : "0x7FE0000",
         "partition_size"    : "0x20000",
         "common_flags"      : ["ACTIVE"],
         "dummy_data"        : 0

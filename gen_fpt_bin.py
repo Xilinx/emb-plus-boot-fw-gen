@@ -12,7 +12,7 @@ from binascii import crc32
 
 fpt_dct = {'FPT': 0xFFFF, 'FPT_RAVE': 6, 'ACTIVE': 1, 'RECOVERY_FPT': 0xFFFE, 'PDI_BOOT': 0x0E00,
            'PDI_META': 0x0E05, 'PDI_BOOT_BACKUP': 0x0E01, 'PDI_META_BACKUP': 0x0E06, 'NONE': 0,
-           'NA': 0, 'EXTENSION_FPT': 0xFFFD, 'PDI_XSABIN_META': 0x0E02}
+           'NA': 0, 'EXTENSION_FPT': 0xFFFD, 'PDI_XSABIN_META': 0x0E02, 'OSPI_VERSION': 0x0E07}
 
 def generate_fpt_binary(in_file, out_file):
     ''' Generate an FPT binary from the input JSON data '''
