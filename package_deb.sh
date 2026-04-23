@@ -122,7 +122,7 @@ EOF
 if [ -n "$BASE" ]; then
 	#Create a directory path for boot xsabin to be present
 	mkdir -p "$BUILDDIR/lib/firmware/xilinx/$UUID"
-	mkdir -p "$BUILDDIR/opt/xilinx/firmware/emb_plus/ve2302_pcie_qdma$DEVICE/base/test"
+	mkdir -p "$BUILDDIR/opt/xilinx/firmware/emb_plus/ve2302_pcie_xdma$DEVICE/base/test"
 elif [ -n "$APU" ]; then
 	#Create a directory path for apu xsabin to be present
 	mkdir -p "$BUILDDIR/lib/firmware/xilinx/"
@@ -140,9 +140,9 @@ elif [ -n "$BASE" ]; then
 	#Rename BASE to partition xsabin and copy
 	cp "$BASE" "$BUILDDIR/lib/firmware/xilinx/$UUID/partition.xsabin"
 	#Rename PLATFORM to platform json and copy
-	cp "$PLATFORM" "$BUILDDIR/opt/xilinx/firmware/emb_plus/ve2302_pcie_qdma$DEVICE/base/test/platform.json"
+	cp "$PLATFORM" "$BUILDDIR/opt/xilinx/firmware/emb_plus/ve2302_pcie_xdma$DEVICE/base/test/platform.json"
 	#Create a symlink partition xsabin
-	ln -s "/lib/firmware/xilinx/$UUID/partition.xsabin" "$BUILDDIR/opt/xilinx/firmware/emb_plus/ve2302_pcie_qdma$DEVICE/base/partition.xsabin"
+	ln -s "/lib/firmware/xilinx/$UUID/partition.xsabin" "$BUILDDIR/opt/xilinx/firmware/emb_plus/ve2302_pcie_xdma$DEVICE/base/partition.xsabin"
 fi
 
 #Check if dpkg-deb package installed
