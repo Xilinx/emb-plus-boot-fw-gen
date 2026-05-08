@@ -24,7 +24,7 @@
         "subtype": "NA",
         "device_id": 1,
         "base_addr": "0x5fbf2000",
-        "partition_size": "0x1cb4",
+        "partition_size": "0x1e1c",
         "common_flags": "ACTIVE",
         "specific_flags": "NONE",
         "img_size": "0x0",
